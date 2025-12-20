@@ -51,6 +51,26 @@
             "projectName": "productservice",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-PaymentserviceApplication<paymentservice>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.clothing.paymentservice.PaymentserviceApplication",
+            "projectName": "paymentservice",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-OrderserviceApplication<orderservice>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.clothing.orderservice.OrderserviceApplication",
+            "projectName": "orderservice",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
