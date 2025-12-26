@@ -1,7 +1,10 @@
 package com.clothing.userservice.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -29,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Map<String, String> request) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> request) {
         String username = request.get("username");
         String password = request.get("password");
 
@@ -38,7 +41,7 @@ public class AuthController {
         System.out.println("   Password provided: " + (password != null));
 
         try {
-            // ✅ Authenticate credentials
+            // ✅ Authenticate credentials (password comparison happens here automatically)
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password)
             );
@@ -48,28 +51,33 @@ public class AuthController {
             String token = jwtService.generateToken(user);
 
             System.out.println("✅ Login successful for user: " + username);
-            System.out.println("🪪 Token prefix: " + token.substring(0, 12) + "...");
+            System.out.println("🪪 Token generated successfully");
 
-            return Map.of(
-                "token", token,
-                "user", user.getUsername(),
-                "roles", user.getAuthorities(),
-                "message", "Login successful"
-            );
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("username", user.getUsername());
+            response.put("message", "Login successful");
+
+            return ResponseEntity.ok(response);
 
         } catch (AuthenticationException e) {
             System.err.println("❌ Authentication failed: " + e.getMessage());
-            return Map.of(
-                "error", "INVALID_CREDENTIALS",
-                "message", "Username or password is incorrect"
-            );
+            
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "INVALID_CREDENTIALS");
+            error.put("message", "Username or password is incorrect");
+            
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
 
         } catch (Exception e) {
             System.err.println("💥 Unexpected error during login: " + e.getMessage());
-            return Map.of(
-                "error", "LOGIN_ERROR",
-                "message", e.getMessage()
-            );
+            e.printStackTrace();
+            
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "LOGIN_ERROR");
+            error.put("message", "An unexpected error occurred");
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
 }

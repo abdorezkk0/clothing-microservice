@@ -8,32 +8,75 @@ spring:
   cloud:
     gateway:
       routes:
+        # User Service Routes
         - id: userservice
           uri: lb://userservice
           predicates:
             - Path=/users/**
+          filters:
+            - RewritePath=/users/(?<segment>.*), /$\{segment}
 
-        - id: productservice
-          uri: lb://productservice
+        # Product Service Routes
+        - id: product-service
+          uri: lb://PRODUCT-SERVICE
           predicates:
             - Path=/products/**
-
+          filters:
+            - RewritePath=/products/(?<segment>.*), /$\{segment}
+            
+        # Cart Service Routes
         - id: cartservice
           uri: lb://cartservice
           predicates:
             - Path=/cart/**
+          filters:
+            - RewritePath=/cart/(?<segment>.*), /$\{segment}
 
+        # Order Service Routes
         - id: orderservice
           uri: lb://orderservice
           predicates:
             - Path=/orders/**
+          filters:
+            - RewritePath=/orders/(?<segment>.*), /$\{segment}
 
+        # Payment Service Routes
         - id: paymentservice
           uri: lb://paymentservice
           predicates:
             - Path=/payments/**
+          filters:
+            - RewritePath=/payments/(?<segment>.*), /$\{segment}
+
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+
+# Enable actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# Enable debug logging for Gateway
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG

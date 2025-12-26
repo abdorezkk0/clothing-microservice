@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;  // ✅ ADDED IMPORT
 
 import com.clothing.cartservice.model.CartItem;
 import com.clothing.cartservice.repository.CartRepository;
@@ -43,10 +44,12 @@ public class CartService {
         return cartItemRepository.save(item);
     }
 
+    @Transactional  // ✅ ADDED
     public void removeItem(UUID userId, UUID productId) {
         cartItemRepository.deleteByUserIdAndProductId(userId, productId);
     }
 
+    @Transactional  // ✅ ADDED
     public void clearCart(UUID userId) {
         cartItemRepository.deleteByUserId(userId);
     }
