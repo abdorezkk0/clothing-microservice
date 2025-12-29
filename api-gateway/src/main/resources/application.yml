@@ -8,50 +8,74 @@ spring:
   cloud:
     gateway:
       routes:
-        # User Service Routes
+        # User Service Route
         - id: userservice
-          uri: lb://userservice
+          uri: lb://USERSERVICE
           predicates:
-            - Path=/users/**
+            - Path=/userservice/**
           filters:
-            - RewritePath=/users/(?<segment>.*), /$\{segment}
+            - StripPrefix=1
 
-        # Product Service Routes
+        # Product Service Route
         - id: product-service
           uri: lb://PRODUCT-SERVICE
           predicates:
-            - Path=/products/**
+            - Path=/product-service/**
           filters:
-            - RewritePath=/products/(?<segment>.*), /$\{segment}
-            
-        # Cart Service Routes
+            - StripPrefix=1
+
+        # Cart Service Route
         - id: cartservice
-          uri: lb://cartservice
+          uri: lb://CARTSERVICE
           predicates:
-            - Path=/cart/**
+            - Path=/cartservice/**
           filters:
-            - RewritePath=/cart/(?<segment>.*), /$\{segment}
+            - StripPrefix=1
 
-        # Order Service Routes
+        # Order Service Route
         - id: orderservice
-          uri: lb://orderservice
+          uri: lb://ORDERSERVICE
           predicates:
-            - Path=/orders/**
+            - Path=/orderservice/**
           filters:
-            - RewritePath=/orders/(?<segment>.*), /$\{segment}
+            - StripPrefix=1
 
-        # Payment Service Routes
-        - id: paymentservice
-          uri: lb://paymentservice
+        # Payment Service Route
+        - id: payment-service
+          uri: lb://PAYMENT-SERVICE
           predicates:
-            - Path=/payments/**
+            - Path=/payment-service/**
           filters:
-            - RewritePath=/payments/(?<segment>.*), /$\{segment}
+            - StripPrefix=1
 
       discovery:
         locator:
           enabled: true
           lower-case-service-id: true
+
+      # ✅ FIXED: Global CORS Configuration (was cors-configurations, should be corsConfigurations)
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            exposedHeaders: "*"
+            allowCredentials: false
+
+      # ✅ NEW: Default filters to preserve headers
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+      # ✅ NEW: HTTP client configuration to preserve headers
+      httpclient:
+        wiretap: true
 
 eureka:
   client:
@@ -61,9 +85,8 @@ eureka:
     fetch-registry: true
   instance:
     hostname: localhost
-    prefer-ip-address: false
+    prefer-ip-address: true
 
-# Enable actuator endpoints
 management:
   endpoints:
     web:
@@ -75,8 +98,9 @@ management:
     gateway:
       enabled: true
 
-# Enable debug logging for Gateway
 logging:
   level:
+    com.clothing.gateway.security: DEBUG
+    org.springframework.security: DEBUG
     org.springframework.cloud.gateway: DEBUG
-    org.springframework.web: DEBUG
+    reactor.netty.http.client: DEBUG

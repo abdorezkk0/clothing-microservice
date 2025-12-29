@@ -1,12 +1,13 @@
 package com.clothing.userservice.service;
 
-import com.clothing.userservice.model.User;
-import com.clothing.userservice.repository.UserRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import com.clothing.userservice.model.User;
+import com.clothing.userservice.repository.UserRepository;
 
 @Service
 @Transactional
@@ -28,8 +29,10 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+    // ✅ FIXED: Return User directly for authenticated endpoints
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
 
     public Optional<User> getUserByUsername(String username) {
@@ -48,16 +51,30 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setEmail(userDetails.getEmail());
-        user.setFirstName(userDetails.getFirstName());
-        user.setLastName(userDetails.getLastName());
-        user.setPhoneNumber(userDetails.getPhoneNumber());
-        user.setAddress(userDetails.getAddress());
+        // ✅ Only update non-null fields
+        if (userDetails.getEmail() != null) {
+            user.setEmail(userDetails.getEmail());
+        }
+        if (userDetails.getFirstName() != null) {
+            user.setFirstName(userDetails.getFirstName());
+        }
+        if (userDetails.getLastName() != null) {
+            user.setLastName(userDetails.getLastName());
+        }
+        if (userDetails.getPhoneNumber() != null) {
+            user.setPhoneNumber(userDetails.getPhoneNumber());
+        }
+        if (userDetails.getAddress() != null) {
+            user.setAddress(userDetails.getAddress());
+        }
 
         return userRepository.save(user);
     }
 
     public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found with id: " + id);
+        }
         userRepository.deleteById(id);
     }
 

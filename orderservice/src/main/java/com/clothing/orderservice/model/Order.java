@@ -6,12 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
@@ -19,10 +21,11 @@ import jakarta.persistence.Table;
 public class Order {
 
     @Id
-    @GeneratedValue
-    private UUID id;
+    @Column(length = 36)
+    private String id;
 
-    private UUID userId;
+    @Column(name = "user_id", length = 36)
+    private String userId;
 
     private String shippingAddress;
 
@@ -33,7 +36,8 @@ public class Order {
     @Column(precision = 10, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference
     private List<OrderItem> items = new ArrayList<>();
 
     public Order() {
@@ -41,63 +45,69 @@ public class Order {
         this.status = "PENDING_PAYMENT";
     }
 
-    public UUID getId() {
-    return id;
-}
+    @PrePersist
+    public void generateId() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString();
+        }
+    }
 
-public void setId(UUID id) {
-    this.id = id;
-}
+    public String getId() {
+        return id;
+    }
 
-public UUID getUserId() {
-    return userId;
-}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-public void setUserId(UUID userId) {
-    this.userId = userId;
-}
+    public String getUserId() {
+        return userId;
+    }
 
-public String getShippingAddress() {
-    return shippingAddress;
-}
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
-public void setShippingAddress(String shippingAddress) {
-    this.shippingAddress = shippingAddress;
-}
+    public String getShippingAddress() {
+        return shippingAddress;
+    }
 
-public String getStatus() {
-    return status;
-}
+    public void setShippingAddress(String shippingAddress) {
+        this.shippingAddress = shippingAddress;
+    }
 
-public void setStatus(String status) {
-    this.status = status;
-}
+    public String getStatus() {
+        return status;
+    }
 
-public LocalDateTime getOrderDate() {
-    return orderDate;
-}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-public void setOrderDate(LocalDateTime orderDate) {
-    this.orderDate = orderDate;
-}
+    public LocalDateTime getOrderDate() {
+        return orderDate;
+    }
 
-public BigDecimal getTotalAmount() {
-    return totalAmount;
-}
+    public void setOrderDate(LocalDateTime orderDate) {
+        this.orderDate = orderDate;
+    }
 
-public void setTotalAmount(BigDecimal totalAmount) {
-    this.totalAmount = totalAmount;
-}
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
 
-public List<OrderItem> getItems() {
-    return items;
-}
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
 
-public void setItems(List<OrderItem> items) {
-    this.items = items;
-    calculateTotal();
-}
+    public List<OrderItem> getItems() {
+        return items;
+    }
 
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+        calculateTotal();
+    }
 
     public void addItem(OrderItem item) {
         items.add(item);

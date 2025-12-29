@@ -1,64 +1,79 @@
 package com.clothing.cartservice.service;
 
+import com.clothing.cartservice.model.CartItem;
+import com.clothing.cartservice.repository.CartRepository;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;  // ✅ ADDED IMPORT
-
-import com.clothing.cartservice.model.CartItem;
-import com.clothing.cartservice.repository.CartRepository;
-
 @Service
 public class CartService {
 
-    private final CartRepository cartItemRepository;
+    private final CartRepository cartRepository;
 
-    public CartService(CartRepository cartItemRepository) {
-        this.cartItemRepository = cartItemRepository;
+    public CartService(CartRepository cartRepository) {
+        this.cartRepository = cartRepository;
     }
 
-    public CartItem addItem(UUID userId, UUID productId, int quantity, BigDecimal price) {
-        CartItem item = cartItemRepository
+    public CartItem addItem(UUID userId, Long productId, int quantity, BigDecimal price) {
+        // Check if item already exists
+        CartItem existingItem = cartRepository
                 .findByUserIdAndProductId(userId, productId)
-                .orElse(new CartItem(userId, productId, 0, price));
+                .orElse(null);
 
-        item.setQuantity(item.getQuantity() + quantity);
-        item.calculateSubtotal();
+        if (existingItem != null) {
+            // Update quantity
+            existingItem.setQuantity(existingItem.getQuantity() + quantity);
+            return cartRepository.save(existingItem);
+        }
 
-        return cartItemRepository.save(item);
+        // Create new item
+        CartItem item = new CartItem();
+        item.setUserId(userId);
+        item.setProductId(productId);
+        item.setQuantity(quantity);
+        item.setPrice(price);
+
+        return cartRepository.save(item);
     }
 
     public List<CartItem> getCart(UUID userId) {
-        return cartItemRepository.findByUserId(userId);
+        return cartRepository.findByUserId(userId);
     }
 
-    public CartItem updateQuantity(UUID userId, UUID productId, int quantity) {
-        CartItem item = cartItemRepository
+    public CartItem updateQuantity(UUID userId, Long productId, int quantity) {
+        CartItem item = cartRepository
                 .findByUserIdAndProductId(userId, productId)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
+                .orElseThrow(() -> new RuntimeException("Item not found in cart"));
 
         item.setQuantity(quantity);
-        item.calculateSubtotal();
-        return cartItemRepository.save(item);
+        return cartRepository.save(item);
     }
 
-    @Transactional  // ✅ ADDED
-    public void removeItem(UUID userId, UUID productId) {
-        cartItemRepository.deleteByUserIdAndProductId(userId, productId);
+    public void removeItem(UUID userId, Long productId) {
+        CartItem item = cartRepository
+                .findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new RuntimeException("Item not found in cart"));
+
+        cartRepository.delete(item);
     }
 
-    @Transactional  // ✅ ADDED
     public void clearCart(UUID userId) {
-        cartItemRepository.deleteByUserId(userId);
+        List<CartItem> items = cartRepository.findByUserId(userId);
+        cartRepository.deleteAll(items);
     }
 
     public BigDecimal getCartTotal(UUID userId) {
-        return cartItemRepository.calculateCartTotal(userId);
+        return cartRepository.findByUserId(userId).stream()
+                .map(item -> item.getPrice().multiply(new BigDecimal(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public int getTotalQuantity(UUID userId) {
-        return cartItemRepository.calculateTotalQuantity(userId);
+        return cartRepository.findByUserId(userId).stream()
+                .mapToInt(CartItem::getQuantity)
+                .sum();
     }
 }

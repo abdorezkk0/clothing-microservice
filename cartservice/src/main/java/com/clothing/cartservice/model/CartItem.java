@@ -1,100 +1,67 @@
 package com.clothing.cartservice.model;
 
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-
 @Entity
-@Table(name = "cart_items",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "product_id"}))
+@Table(name = "cart_items")
 public class CartItem {
-
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(nullable = false)
     private UUID userId;
 
-    @Column(name = "product_id", nullable = false)
-    private UUID productId;
+    // ✅ CHANGED: Use Long instead of UUID for productId
+    @Column(nullable = false)
+    private Long productId;
 
+    @Column(nullable = false)
     private int quantity;
 
-    @Column(precision = 10, scale = 2)
+    @Column(nullable = false)
     private BigDecimal price;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal subtotal;
-
-    public CartItem() {}
-
-    public CartItem(UUID userId, UUID productId, int quantity, BigDecimal price) {
-        this.userId = userId;
-        this.productId = productId;
-        this.quantity = quantity;
-        this.price = price;
-        calculateSubtotal();
-    }
-
-    public void calculateSubtotal() {
-        this.subtotal = price.multiply(BigDecimal.valueOf(quantity));
-    }
-
+    // Getters and Setters
     public UUID getId() {
-    return id;
-}
+        return id;
+    }
 
-public void setId(UUID id) {
-    this.id = id;
-}
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-public UUID getUserId() {
-    return userId;
-}
+    public UUID getUserId() {
+        return userId;
+    }
 
-public void setUserId(UUID userId) {
-    this.userId = userId;
-}
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
 
-public UUID getProductId() {
-    return productId;
-}
+    public Long getProductId() {
+        return productId;
+    }
 
-public void setProductId(UUID productId) {
-    this.productId = productId;
-}
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
 
-public int getQuantity() {
-    return quantity;
-}
+    public int getQuantity() {
+        return quantity;
+    }
 
-public void setQuantity(int quantity) {
-    this.quantity = quantity;
-    calculateSubtotal();
-}
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
-public BigDecimal getPrice() {
-    return price;
-}
+    public BigDecimal getPrice() {
+        return price;
+    }
 
-public void setPrice(BigDecimal price) {
-    this.price = price;
-    calculateSubtotal();
-}
-
-public BigDecimal getSubtotal() {
-    return subtotal;
-}
-
-public void setSubtotal(BigDecimal subtotal) {
-    this.subtotal = subtotal;
-}
-
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
 }

@@ -1,19 +1,18 @@
 package com.clothing.orderservice.dto;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public class CartItemDTO {
 
-    private UUID productId;
+    private String productId;
     private int quantity;
     private BigDecimal price;
 
-    public UUID getProductId() {
+    public String getProductId() {
         return productId;
     }
 
-    public void setProductId(UUID productId) {
+    public void setProductId(String productId) {
         this.productId = productId;
     }
 

@@ -1,19 +1,18 @@
 package com.clothing.orderservice.dto;
 
 import java.util.List;
-import java.util.UUID;
 
 public class CheckoutRequest {
 
-    private UUID userId;
+    private String userId;
     private String shippingAddress;
     private List<CartItemDTO> items;
 
-    public UUID getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(UUID userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
